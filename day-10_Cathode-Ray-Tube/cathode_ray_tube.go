@@ -28,57 +28,42 @@ func calculateKeySignalStrengths(data string) (int, []int) {
 }
 
 func drawOutput(register []int) [6]string {
-	output := [6][41]byte{}
-	for i := 0; i < 6; i++ {
-		for j := 0; j < 40; j++ {
-			output[i][j] = '.'
-		}
-		output[i][40] = '\n'
-	}
-
-	spriteIndex := -1
+	output := [6]string{}
+	spritePosition := []int{0, 1, 2}
 	previousValue := 1
 	lineIndex := 0
-	expected := "##..##..##..##..##..##..##..##..##..##.."
+	previousLineIndex := 0
 
 	for i, value := range register {
-		//for i := 0; i < len(register); i++ {
-		//	value := register[i]
-		if spriteIndex == 1 && previousValue == value || value < 0 {
-			continue
+		if previousValue != value || previousLineIndex != lineIndex {
+			adjustedValue := value + (40 * lineIndex)
+			spritePosition = []int{adjustedValue - 1, adjustedValue, adjustedValue + 1}
+			previousLineIndex = lineIndex
 		}
-		if previousValue != value {
-			spriteIndex = -1
-		}
-		if value%2 == 0 {
-			indexToWrite := value + spriteIndex + 1
-			output[lineIndex][indexToWrite] = '#'
-			if output[lineIndex][indexToWrite] != expected[indexToWrite] {
-				fmt.Printf("hop hop hop ! @ index %d du registre", i)
-			}
-		} else {
-			indexToWrite := value + spriteIndex
-			output[lineIndex][indexToWrite] = '#'
-			if output[lineIndex][indexToWrite] != expected[indexToWrite] {
-				fmt.Printf("hop hop hop ! @ index %d du registre", i)
+
+		printedSprite := false
+		for _, index := range spritePosition {
+			if i == index {
+				output[lineIndex] += "#"
+				printedSprite = true
 			}
 		}
-		spriteIndex++
+		if printedSprite == false {
+			output[lineIndex] += "."
+		}
+
 		if (i+1)%40 == 0 {
+			if lineIndex == 5 {
+				break
+			}
+			output[lineIndex] += "\n"
+			previousLineIndex = lineIndex
 			lineIndex++
 		}
 		previousValue = value
 	}
 
-	outputStr := [6]string{}
-	for i := range output {
-		str := ""
-		for j := range output[i] {
-			str += string(output[i][j])
-		}
-		outputStr[i] = str
-	}
-	return outputStr
+	return output
 }
 
 func main() {
@@ -93,6 +78,6 @@ func main() {
 	spriteOutput := drawOutput(registerValues)
 	fmt.Printf("Visual output:\n")
 	for _, line := range spriteOutput {
-		fmt.Printf("%s\n", line)
+		fmt.Printf("%s", line)
 	}
 }
