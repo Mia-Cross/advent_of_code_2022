@@ -27,7 +27,7 @@ move 3 from 6 to 8
 move 4 from 5 to 6
 move 1 from 4 to 1
 move 2 from 5 to 2
-move 8 from 9 to 7
+move 8 from 9 to 7     -now
 move 1 from 5 to 1
 move 3 from 9 to 4
 move 1 from 4 to 9

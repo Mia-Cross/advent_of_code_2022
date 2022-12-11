@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+const numberOfStacks = 9
+
 func printStacks(stacks map[int]string) {
 	for i := 1; i < len(stacks)+1; i++ {
 		fmt.Printf("[%d] [%s]\n", i, stacks[i])
@@ -70,13 +72,28 @@ func parseStacks(data string, max int) map[int]string {
 	return stacks
 }
 
-func performMoves(data string, stacks map[int]string) map[int]string {
-	//printStacks(stacks)
+func crateMover9000(stacks map[int]string, quantity, from, to int) map[int]string {
+	toMove := stacks[from][len(stacks[from])-quantity:]
+	for i := quantity - 1; i >= 0; i-- {
+		stacks[to] += string(toMove[i])
+	}
+	stacks[from] = stacks[from][:len(stacks[from])-quantity]
+	return stacks
+}
+
+func crateMover9001(stacks map[int]string, quantity, from, to int) map[int]string {
+	toMove := stacks[from][len(stacks[from])-quantity:]
+	stacks[to] += toMove
+	stacks[from] = stacks[from][:len(stacks[from])-quantity]
+	return stacks
+}
+
+func performMoves(data string, stacks map[int]string, craneModel int) string {
 	quantity := 0
 	from := 0
 	to := 0
+
 	for _, instruction := range strings.Split(data, "\n") {
-		//fmt.Printf("\n__________________\nEXECUTING -> %s\n\n", instruction)
 		if !strings.HasPrefix(instruction, "move") {
 			continue
 		}
@@ -84,21 +101,18 @@ func performMoves(data string, stacks map[int]string) map[int]string {
 		if err != nil {
 			log.Fatalf("error scanning instructions line %s: %v", instruction, err)
 		}
-		//if len(stacks[from])-quantity < 0 {
-		//	continue
-		//}
-		oldStacks := stacks
-		toMove := stacks[from][len(stacks[from])-quantity:]
-		for i := quantity - 1; i >= 0; i-- {
-			stacks[to] += string(toMove[i])
+		if craneModel == 9000 {
+			stacks = crateMover9000(stacks, quantity, from, to)
+		} else {
+			stacks = crateMover9001(stacks, quantity, from, to)
 		}
-		stacks[from] = strings.TrimRight(stacks[from], toMove)
-		if !checkStacks(stacks, oldStacks, quantity, from, to) {
-			log.Fatalf("NOPE !! move %d from %d to %d fucked up", quantity, from, to)
-		}
-		//printStacks(stacks)
 	}
-	return stacks
+
+	topCrates := ""
+	for i := 1; i < len(stacks)+1; i++ {
+		topCrates += string(stacks[i][len(stacks[i])-1])
+	}
+	return topCrates
 }
 
 func main() {
@@ -106,17 +120,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("error parsing file: %v", err)
 	}
+	data := string(buffer)
 
-	stacksInit := parseStacks(string(buffer), 9)
-	stacksFinal := performMoves(string(buffer), stacksInit)
-	//printStacks(stacksFinal)
+	stacksFinal9000 := performMoves(data, parseStacks(data, numberOfStacks), 9000)
+	stacksFinal9001 := performMoves(data, parseStacks(data, numberOfStacks), 9001)
 
-	finalStr := ""
-	for i := 1; i < len(stacksFinal)+1; i++ {
-		//if stacksFinal[i] == "" {
-		//	continue
-		//}
-		finalStr += string(stacksFinal[i][len(stacksFinal[i])-1])
-	}
-	fmt.Printf("Final state of the stacks: %s", finalStr)
+	fmt.Printf("Final state of the stacks with the CrateMover9000: %s\n", stacksFinal9000)
+	fmt.Printf("Final state of the stacks with the CrateMover9001: %s\n", stacksFinal9001)
 }

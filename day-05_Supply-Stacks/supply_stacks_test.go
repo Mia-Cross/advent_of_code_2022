@@ -8,17 +8,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSupplyStacks(t *testing.T) {
+const numberOfStacksTest = 3
+
+func TestSupplyStacks9000(t *testing.T) {
 	buffer, err := os.ReadFile("stacks_test.txt")
 	if err != nil {
 		log.Fatalf("error parsing file: %v", err)
 	}
-	stacksInit := parseStacks(string(buffer), 3)
-	stacksFinal := performMoves(string(buffer), stacksInit)
+	stacksInit := parseStacks(string(buffer), numberOfStacksTest)
+	stacksFinal := performMoves(string(buffer), stacksInit, 9000)
 
-	finalStr := ""
-	for _, stack := range stacksFinal {
-		finalStr += string(stack[len(stack)-1])
+	assert.Equal(t, "CMZ", stacksFinal)
+}
+
+func TestSupplyStacks9001(t *testing.T) {
+	buffer, err := os.ReadFile("stacks_test.txt")
+	if err != nil {
+		log.Fatalf("error parsing file: %v", err)
 	}
-	assert.Equal(t, "CMZ", finalStr)
+	stacksInit := parseStacks(string(buffer), numberOfStacksTest)
+	stacksFinal := performMoves(string(buffer), stacksInit, 9001)
+
+	assert.Equal(t, "MCD", stacksFinal)
 }
